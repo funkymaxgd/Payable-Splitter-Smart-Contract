@@ -38,6 +38,10 @@ contract PaySplitter {
         // don't let wallet be added twice ****************************** must fix
     }
 
+    //
+    // Remove wallet function?
+    //
+
     function viewWallets() public view returns (address[] memory){
         require(msg.sender == owner, "Caller is not owner");
         address[] memory addressList = new address[](walletPayees.length);
