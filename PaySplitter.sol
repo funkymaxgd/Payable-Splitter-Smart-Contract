@@ -20,7 +20,8 @@ contract PaySplitter {
 
     WalletList[] public walletPayees;
 
-    mapping(string => address) public walletToName;
+    // use mapping to ease index-based deletion?
+    mapping(address => uint) public walletToIndex;
 
     // set contract administrator
     function createOwner() public returns (address) {
@@ -31,16 +32,25 @@ contract PaySplitter {
 
     // adding a person to the list of addresses
     function addWalletToList(string memory _name, address _wallet) public {
-        require(msg.sender == owner, "Caller is not owner");
+        require(msg.sender == owner && walletToIndex[_wallet] == 0, "Caller is not owner or wallet exists");
         walletPayees.push(WalletList(_name, _wallet)); // add to payees list struct object
-        walletToName[_name] = _wallet; // add to mapping
-
-        // don't let wallet be added twice ****************************** must fix
+        walletToIndex[_wallet] = walletPayees.length; // add to mapping
     }
 
-    //
-    // Remove wallet function?
-    //
+    // Remove wallet from list of addresses and wallet index mapping
+    function removeWalletFromList(address _wallet) public {
+        require(msg.sender == owner, "Caller is not owner or wallet exists");
+        // move last array item to place of index to delete from 'walletPayees'
+        uint newIndex = walletToIndex[_wallet];
+        walletPayees[walletToIndex[_wallet]-1] = walletPayees[walletPayees.length - 1];
+        // modify index in mapping 'walletToIndex' of item that was shifted
+        walletToIndex[walletPayees[walletToIndex[_wallet]-1].wallet] = newIndex;
+        // remove from mapping
+        delete walletToIndex[_wallet];
+        // pop array
+        walletPayees.pop();
+        
+    }
 
     function viewWallets() public view returns (address[] memory){
         require(msg.sender == owner, "Caller is not owner");
