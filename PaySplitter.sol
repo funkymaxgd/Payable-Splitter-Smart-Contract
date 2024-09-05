@@ -12,6 +12,7 @@ contract PaySplitter {
     
     // list of addresses and owner
     address private owner;
+    uint256 amount;
     
     struct WalletList{
         string name;
@@ -24,10 +25,8 @@ contract PaySplitter {
     mapping(address => uint) public walletToIndex;
 
     // set contract administrator
-    function createOwner() public returns (address) {
+    constructor()  {
         owner = msg.sender;
-
-        return (owner);
     }
 
     // adding a person to the list of addresses
@@ -61,10 +60,21 @@ contract PaySplitter {
         return (addressList);
     }
 
-    // payable function which splits it between the people
+    // withdraw function which splits ETH balance of contract between the walletPayees addresses
+    function withdraw() public {
+        // divide the amount of pay by length of the wallet array
+        uint splitPay = amount / walletPayees.length;
+        address payable currentWallet;
+        // distribute the amount to the wallets
+        for (uint i; i < walletPayees.length; i++) {
+            // convert wallet to address payable
+            currentWallet = payable(walletPayees[i].wallet);
+            currentWallet.transfer(splitPay);
+        }
+    }
 
-    function receivePay() public payable {
-
+    receive() external payable {
+        amount = msg.value;
     }
 
 }
